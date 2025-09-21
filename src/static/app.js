@@ -13,44 +13,66 @@ document.addEventListener("DOMContentLoaded", () => {
       // Clear loading message
       activitiesList.innerHTML = "";
 
+      // Clear previous options in the select dropdown
+      activitySelect.innerHTML = '<option value="" disabled selected>Select an activity</option>';
+
+      // Helper function to create participants section
+      function createParticipantsSection(participants) {
+        const section = document.createElement("div");
+        if (participants.length > 0) {
+          section.className = "participants-section";
+          const strong = document.createElement("strong");
+          strong.textContent = "Participants:";
+          section.appendChild(strong);
+
+          const ul = document.createElement("ul");
+          participants.forEach(email => {
+            const li = document.createElement("li");
+            li.textContent = email;
+            ul.appendChild(li);
+          });
+          section.appendChild(ul);
+        } else {
+          section.className = "participants-section no-participants";
+          const em = document.createElement("em");
+          em.textContent = "No participants yet.";
+          section.appendChild(em);
+        }
+        return section;
+      }
+
       // Populate activities list
       Object.entries(activities).forEach(([name, details]) => {
         const activityCard = document.createElement("div");
         activityCard.className = "activity-card";
 
-        const spotsLeft = details.max_participants - details.participants.length;
+        // Build card content using DOM methods to avoid overwriting appended nodes
+        const h4 = document.createElement("h4");
+        h4.textContent = name;
+        activityCard.appendChild(h4);
 
-        // Participants section
-        let participantsSection;
-        if (details.participants.length > 0) {
-          participantsSection = document.createElement("div");
-          participantsSection.className = "participants-section";
-          const strong = document.createElement("strong");
-          strong.textContent = "Participants:";
-          participantsSection.appendChild(strong);
+        const descP = document.createElement("p");
+        descP.textContent = details.description;
+        activityCard.appendChild(descP);
 
-          const ul = document.createElement("ul");
-          details.participants.forEach(email => {
-            const li = document.createElement("li");
-            li.textContent = email;
-            ul.appendChild(li);
-          });
-          participantsSection.appendChild(ul);
-        } else {
-          participantsSection = document.createElement("div");
-          participantsSection.className = "participants-section no-participants";
-          const em = document.createElement("em");
-          em.textContent = "No participants yet.";
-          participantsSection.appendChild(em);
-        }
+        const scheduleP = document.createElement("p");
+        const scheduleStrong = document.createElement("strong");
+        scheduleStrong.textContent = "Schedule:";
+        scheduleP.appendChild(scheduleStrong);
+        scheduleP.appendChild(document.createTextNode(` ${details.schedule}`));
+        activityCard.appendChild(scheduleP);
 
-        activityCard.innerHTML = `
-          <h4>${name}</h4>
-          <p>${details.description}</p>
-          <p><strong>Schedule:</strong> ${details.schedule}</p>
-          <p><strong>Availability:</strong> ${spotsLeft} spots left</p>
-        `;
+        // FIX: Remove duplicate 'availP' and 'spotsLeft' declarations
+        const spotsLeft = details.spotsLeft !== undefined ? details.spotsLeft : 0;
+        const availP = document.createElement("p");
+        const availStrong = document.createElement("strong");
+        availStrong.textContent = "Availability:";
+        availP.appendChild(availStrong);
+        availP.appendChild(document.createTextNode(` ${spotsLeft} spots left`));
+        activityCard.appendChild(availP);
 
+        // Use helper function for participants section
+        const participantsSection = createParticipantsSection(details.participants);
         activityCard.appendChild(participantsSection);
 
         activitiesList.appendChild(activityCard);
